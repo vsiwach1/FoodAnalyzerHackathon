@@ -1,0 +1,38 @@
+﻿@page
+@model FoodAnalyzer.Pages.AnalyzeModel
+@{
+}
+<div>
+    <form enctype="multipart/form-data" method="post">
+        <dl>
+            <dt>
+                <label asp-for="FormFile"></label>
+            </dt>
+            <dd>
+                <input asp-for="FormFile" type="file">
+                <span asp-validation-for="FormFile" style="color:red"></span>
+                
+            </dd>
+        </dl>
+        <input asp-page-handler="Upload" class="btn btn-primary" type="submit" value="Upload" />
+    </form>
+    @if(!string.IsNullOrEmpty(Model.FoodType)) {
+        <div>
+            <img decoding="async" src="@Model.UploadedFile" />
+        </div>
+        <div class="status-container">
+            @if (Model.FoodType == "Green")
+            {
+                <div class="status text-green"><strong>Your food is good in nutrition</strong></div>
+            }
+            else if (Model.FoodType == "Red")
+            {
+                <div class="status text-red"><strong>Your food is not good for health</strong></div>
+            }
+            else if (Model.FoodType == "Yellow")
+            {
+                <div class="status text-blue"><strong>Your food is unhealthy but can be consumed in limited quantity</strong></div>
+            }
+        </div>
+    }
+</div>

@@ -1,0 +1,43 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.status {
+    vertical-align: middle;
+    padding: 6px 4px 0 0;
+    font-size: 24px;
+}
+.status-container {
+    vertical-align: middle;
+    background-color: #dfdfdf;
+    height: 80px;
+    width: 500px;
+}
+.text-red {
+    color:red;
+}
+.text-green {
+    color: green;
+}
+.text-yellow {
+    color: yellow;
+}
+
+.text-blue {
+    color: blue;
+}
