@@ -9,6 +9,11 @@ builder.Services.AddHttpClient("FoodAnalyzer", httpClient =>
     httpClient.BaseAddress = new Uri("Your Api base address");
     httpClient.DefaultRequestHeaders.Add("Prediction-Key", "your prediction project key");   
 });
+builder.Services.AddHttpClient("FoodDectector", httpClient =>
+{
+    httpClient.BaseAddress = new Uri("Your Api base address");
+    httpClient.DefaultRequestHeaders.Add("Prediction-Key", "your prediction project key");
+});
 
 var app = builder.Build();
 
