@@ -26,7 +26,7 @@ body {
     vertical-align: middle;
     background-color: #dfdfdf;
     height: 80px;
-    width: 500px;
+    width: auto;
 }
 .text-red {
     color:red;
