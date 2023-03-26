@@ -8,6 +8,7 @@ using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Training.Models;
 using System.IO;
 using System.Text.Json;
 using Newtonsoft.Json.Serialization;
+using System.Text;
 
 namespace FoodAnalyzer.Pages
 {
@@ -21,6 +22,7 @@ namespace FoodAnalyzer.Pages
         public string? FoodType { get; set; } = string.Empty;
         public string? DetectedFood { get; set; } = string.Empty;
         public dynamic UploadedFile { get; set; } = string.Empty;
+        public FoodNutrition FoodNutrition { get; set; } = new();
         public AnalyzeModel(IHttpClientFactory factory)
         {
 
@@ -64,7 +66,10 @@ namespace FoodAnalyzer.Pages
                     stream.Seek(0, SeekOrigin.Begin);
                     predictionResult = await GetApiResponse(_httpClientDetector, stream);
                     DetectedFood = predictionResult?.Predictions?.OrderByDescending(x => x.Probability)?.FirstOrDefault()?.TagName;
-
+                    if (string.IsNullOrEmpty(DetectedFood))
+                        return;
+                    var nutritionData = await GetNutritions(DetectedFood);
+                    FoodNutrition = nutritionData?.Foods.FirstOrDefault(x => DetectedFood.Equals(x.Food_Name, StringComparison.OrdinalIgnoreCase)) ?? new();
                 }
 
             }
@@ -76,7 +81,22 @@ namespace FoodAnalyzer.Pages
 
         }
 
-        private async ValueTask<APIResponse?> GetApiResponse(HttpClient client, MemoryStream stream)
+        private async Task<NutritionAPIResponse?> GetNutritions(string foodName)
+        {
+            var requestContent = new NutritionApiInputData() { 
+                query = foodName, timezone = "US/Eastern"
+            };            
+            var response = await _httpClientNutrition.PostAsJsonAsync("", requestContent);
+            response.EnsureSuccessStatusCode();
+            var responseContent = await response.Content.ReadAsStreamAsync();
+            var predictionResult = await JsonSerializer.DeserializeAsync<NutritionAPIResponse>(responseContent, new JsonSerializerOptions()
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            return predictionResult;
+        }
+
+        private async Task<APIResponse?> GetApiResponse(HttpClient client, MemoryStream stream)
         {
             var requestContent = new StreamContent(stream);
             var requestMessage = new HttpRequestMessage()
