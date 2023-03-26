@@ -15,13 +15,18 @@ namespace FoodAnalyzer.Pages
     {
         [Display(Name = "File")]
         public IFormFile? FormFile { get; set; }
-        private HttpClient _httpClient;
-        public string FoodType { get; set; } = string.Empty;
+        private HttpClient _httpClientAnalyzer;
+        private HttpClient _httpClientDetector;
+        private HttpClient _httpClientNutrition;
+        public string? FoodType { get; set; } = string.Empty;
+        public string? DetectedFood { get; set; } = string.Empty;
         public dynamic UploadedFile { get; set; } = string.Empty;
         public AnalyzeModel(IHttpClientFactory factory)
         {
-           
-            _httpClient = factory.CreateClient("FoodAnalyzer");
+
+            _httpClientAnalyzer = factory.CreateClient("FoodAnalyzer");
+            _httpClientDetector = factory.CreateClient("FoodDectector");
+            _httpClientNutrition = factory.CreateClient("FoodNutrition");
         }
         public void OnGet()
         {
@@ -48,33 +53,46 @@ namespace FoodAnalyzer.Pages
                     await FormFile.CopyToAsync(stream);
                     stream.Seek(0, SeekOrigin.Begin);
                     var byteData = stream.ToArray();
-                    string imreBase64Data = Convert.ToBase64String(byteData);
-                    UploadedFile = string.Format("data:image/png;base64,{0}", imreBase64Data);
+                    string base64Data = Convert.ToBase64String(byteData);
+                    UploadedFile = string.Format("data:image/png;base64,{0}", base64Data);
                     stream.Seek(0, SeekOrigin.Begin);
-                    var requestContent = new StreamContent(stream);
-                    var requestMessage = new HttpRequestMessage()
-                    {
-                        Content = requestContent,
-                        Method = HttpMethod.Post
-                    };
-                    requestMessage.Content.Headers.Add("Content-Type", "application/octet-stream");
-                    var response = await _httpClient.SendAsync(requestMessage);
-                    response.EnsureSuccessStatusCode();
-                    var content = await response.Content.ReadAsStreamAsync();
-                    var predictionResult = await JsonSerializer.DeserializeAsync<APIResponse>(content, new JsonSerializerOptions()
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    var predictionResult = await GetApiResponse(_httpClientAnalyzer, stream);
                     FoodType = predictionResult?.Predictions?.OrderByDescending(x => x.Probability)?.FirstOrDefault()?.TagName;
+
+                    if (FoodType == "Red")
+                        return;
+                    stream.Seek(0, SeekOrigin.Begin);
+                    predictionResult = await GetApiResponse(_httpClientDetector, stream);
+                    DetectedFood = predictionResult?.Predictions?.OrderByDescending(x => x.Probability)?.FirstOrDefault()?.TagName;
+
                 }
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 ModelState.AddModelError("FormFile", "Some error occured");
             }
 
 
+        }
+
+        private async ValueTask<APIResponse?> GetApiResponse(HttpClient client, MemoryStream stream)
+        {
+            var requestContent = new StreamContent(stream);
+            var requestMessage = new HttpRequestMessage()
+            {
+                Content = requestContent,
+                Method = HttpMethod.Post
+            };
+            requestMessage.Content.Headers.Add("Content-Type", "application/octet-stream");
+            var response = await client.SendAsync(requestMessage);
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStreamAsync();
+            var predictionResult = await JsonSerializer.DeserializeAsync<APIResponse>(content, new JsonSerializerOptions()
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            return predictionResult;
         }
     }
 }

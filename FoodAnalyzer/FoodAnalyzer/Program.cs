@@ -7,13 +7,20 @@ builder.Services.AddRazorPages();
 builder.Services.AddHttpClient("FoodAnalyzer", httpClient =>
 {
     httpClient.BaseAddress = new Uri("Your Api base address");
-    httpClient.DefaultRequestHeaders.Add("Prediction-Key", "your prediction project key");   
+    httpClient.DefaultRequestHeaders.Add("Prediction-Key", "your prediction project key");
 });
 builder.Services.AddHttpClient("FoodDectector", httpClient =>
 {
     httpClient.BaseAddress = new Uri("Your Api base address");
     httpClient.DefaultRequestHeaders.Add("Prediction-Key", "your prediction project key");
 });
+builder.Services.AddHttpClient("FoodNutrition", httpClient =>
+{
+    httpClient.BaseAddress = new Uri("https://trackapi.nutritionix.com/v2/natural/nutrients");
+    httpClient.DefaultRequestHeaders.Add("x-app-id", "your application id");
+    httpClient.DefaultRequestHeaders.Add("x-app-key", "your application key");
+});
+
 
 var app = builder.Build();
 

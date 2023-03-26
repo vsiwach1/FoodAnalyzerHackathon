@@ -11,14 +11,20 @@
             <dd>
                 <input asp-for="FormFile" type="file">
                 <span asp-validation-for="FormFile" style="color:red"></span>
-                
+
             </dd>
         </dl>
         <input asp-page-handler="Upload" class="btn btn-primary" type="submit" value="Upload" />
     </form>
-    @if(!string.IsNullOrEmpty(Model.FoodType)) {
+    @if (!string.IsNullOrEmpty(Model.FoodType))
+    {
         <div>
             <img decoding="async" src="@Model.UploadedFile" />
+            @if (!string.IsNullOrEmpty(Model.DetectedFood))
+            {
+                <div style="font-size:24px: width:40%; display:inline-block;"><strong>Detected Food: </strong></div>
+                <div style="font-size:24px; width:40%; color:blue; display:inline-block;">@Model.DetectedFood</div>
+            }
         </div>
         <div class="status-container">
             @if (Model.FoodType == "Green")
